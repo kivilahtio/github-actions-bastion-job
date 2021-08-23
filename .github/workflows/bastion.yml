@@ -6,20 +6,46 @@ on:
 
 jobs:
   build-internal:
-    if: ${{ github.event.pull_request.head.full_name == github.repository }}
+    if: ${{ github.event_name == "push" || (github.event_name == "pull_request" && github.event.pull_request.head.full_name == github.repository) }}
     runs-on: ubuntu-latest
 
     steps:
-    - name: Run a one-line script
+    - name: Run a build-internal -notification
       run: echo Hello, internal!
 
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.17
+
+    - name: Build
+      run: go build -v ./...
+
+    - name: Test
+      run: go test -v ./...
+
   build-external:
-    if: ${{ github.event.pull_request.head.full_name != github.repository }}
+    if: ${{ github.event_name == "pull_request" && github.event.pull_request.head.full_name != github.repository }}
     runs-on: ubuntu-latest
 
     steps:
-    - name: Run a one-line script
+    - name: Run a build-external -notification
       run: echo Hello, external!
+
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.17
+
+    - name: Build
+      run: go build -v ./...
+
+    - name: Test
+      run: go test -v ./...
 
   one:
     runs-on: ubuntu-latest
